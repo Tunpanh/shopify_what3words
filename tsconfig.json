@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["app/**/*.ts", "app/**/*.tsx", "remix.env.d.ts"],
+  "exclude": ["node_modules", "build", "dist"]
+}
+
