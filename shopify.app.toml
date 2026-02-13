@@ -21,6 +21,10 @@ redirect_urls = [
 [webhooks]
 api_version = "2025-10"
 
+  [[webhooks.subscriptions]]
+  topics = ["orders/create"]
+  uri = "/webhooks/orders/create"
+
 [app_proxy]
 url = "https://example.com"
 subpath = "apps/test-shop"
