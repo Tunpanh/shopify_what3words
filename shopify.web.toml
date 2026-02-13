@@ -4,5 +4,4 @@ webhooks_path = "/webhooks/app/uninstalled"
 
 [commands]
 build = "npm run build"
-dev = "npm run dev"
-
+dev = "npm run dev:web"

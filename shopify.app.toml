@@ -9,7 +9,7 @@ automatically_update_urls_on_dev = true
 dev_store_url = "REPLACE_WITH_DEV_STORE.myshopify.com"
 
 [access_scopes]
-scopes = "write_products"
+scopes = "read_orders,write_orders,write_metafields"
 
 [auth]
 redirect_urls = [
@@ -28,4 +28,3 @@ prefix = "apps"
 
 [pos]
 embedded = false
-

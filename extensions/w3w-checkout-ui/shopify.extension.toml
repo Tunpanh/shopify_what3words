@@ -1,4 +1,4 @@
-api_version = "2024-10"
+api_version = "2025-10"
 
 [[extensions]]
 name = "w3w-checkout-ui"
@@ -8,3 +8,7 @@ type = "ui_extension"
 [[extensions.targeting]]
 module = "./src/index.tsx"
 target = "purchase.checkout.delivery-address.render-after"
+
+[extensions.capabilities]
+api_access = true
+network_access = true
