@@ -14,18 +14,15 @@ import {
   TextField
 } from "@shopify/polaris";
 import en from "@shopify/polaris/locales/en.json";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import prisma from "~/db.server";
+import { authenticate } from "~/shopify.server";
 import { encrypt } from "~/utils/encryption.server";
 
 type ActionData = {
   ok: boolean;
   errors?: {
-    shop?: string;
     apiKey?: string;
-  };
-  values?: {
-    shop: string;
   };
 };
 
@@ -35,36 +32,9 @@ type LoaderData = {
   updatedAt: string | null;
 };
 
-const SHOP_DOMAIN_PATTERN = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i;
-
-function normalizeShop(raw: FormDataEntryValue | string | null): string {
-  if (typeof raw !== "string") {
-    return "";
-  }
-  return raw.trim().toLowerCase();
-}
-
-function validateShop(shop: string): string | undefined {
-  if (!shop) {
-    return "Shop domain is required.";
-  }
-  if (!SHOP_DOMAIN_PATTERN.test(shop)) {
-    return "Shop domain must look like store-name.myshopify.com.";
-  }
-  return undefined;
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const shop = normalizeShop(url.searchParams.get("shop"));
-
-  if (!shop || !SHOP_DOMAIN_PATTERN.test(shop)) {
-    return json<LoaderData>({
-      shop: "",
-      hasApiKey: false,
-      updatedAt: null
-    });
-  }
+  const { session } = await authenticate.admin(request);
+  const shop = session.shop;
 
   const settings = await prisma.shopSettings.findUnique({
     where: { shop },
@@ -79,23 +49,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  const { session } = await authenticate.admin(request);
+  const shop = session.shop;
+
   const formData = await request.formData();
-  const shop = normalizeShop(formData.get("shop"));
   const apiKey = String(formData.get("apiKey") ?? "").trim();
 
-  const shopError = validateShop(shop);
   const apiKeyError = apiKey.length === 0 ? "what3words API key is required." : undefined;
 
-  if (shopError || apiKeyError) {
+  if (apiKeyError) {
     return json<ActionData>(
       {
         ok: false,
         errors: {
-          shop: shopError,
           apiKey: apiKeyError
-        },
-        values: {
-          shop
         }
       },
       { status: 400 }
@@ -114,10 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   return json<ActionData>({
-    ok: true,
-    values: {
-      shop
-    }
+    ok: true
   });
 }
 
@@ -125,13 +89,7 @@ export default function AppSettingsRoute() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const [shop, setShop] = useState(actionData?.values?.shop ?? loaderData.shop);
   const [apiKey, setApiKey] = useState("");
-
-  useEffect(() => {
-    const nextShop = actionData?.values?.shop ?? loaderData.shop;
-    setShop(nextShop);
-  }, [actionData?.values?.shop, loaderData.shop]);
 
   const isSubmitting = navigation.state === "submitting";
   const formattedUpdatedAt = useMemo(() => {
@@ -151,25 +109,12 @@ export default function AppSettingsRoute() {
             </Banner>
           ) : null}
 
-          {!loaderData.shop ? (
-            <Banner tone="info" title="Provide a shop domain">
-              <p>Enter the connected shop domain to store settings per shop.</p>
-            </Banner>
-          ) : null}
-
           <Card>
             <Form method="post">
               <FormLayout>
-                <TextField
-                  label="Shop domain"
-                  name="shop"
-                  value={shop}
-                  onChange={setShop}
-                  autoComplete="off"
-                  placeholder="store-name.myshopify.com"
-                  error={actionData?.errors?.shop}
-                  helpText="Settings are saved per Shopify shop domain."
-                />
+                <Text as="p" variant="bodyMd">
+                  Connected shop: <strong>{loaderData.shop}</strong>
+                </Text>
                 <TextField
                   label="what3words API key"
                   name="apiKey"
