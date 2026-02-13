@@ -6,6 +6,8 @@ import {
   Text,
   TextField,
   reactExtension,
+  useApplyAttributeChange,
+  useAttributes,
   useShippingAddress
 } from "@shopify/ui-extensions-react/checkout";
 import { fetchMockSuggestions } from "./mockSuggestions";
@@ -13,12 +15,15 @@ import type { W3WSuggestion } from "./types";
 import { useDebouncedValue } from "./useDebouncedValue";
 
 const DEBOUNCE_MS = 300;
+const CHECKOUT_ATTRIBUTE_KEY = "w3w_address";
 
 export default reactExtension("purchase.checkout.delivery-address.render-after", () => (
   <What3WordsInput />
 ));
 
 function What3WordsInput() {
+  const applyAttributeChange = useApplyAttributeChange();
+  const attributes = useAttributes();
   const shippingAddress = useShippingAddress();
   const countryCode = shippingAddress?.countryCode;
 
@@ -28,8 +33,24 @@ function What3WordsInput() {
   const [selectedSuggestionId, setSelectedSuggestionId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | undefined>();
+  const [isSavingAttribute, setIsSavingAttribute] = useState(false);
+  const [attributeError, setAttributeError] = useState<string | undefined>();
 
   const debouncedInput = useDebouncedValue(liveInput, DEBOUNCE_MS);
+  const existingAttributeValue = useMemo(() => {
+    const attribute = attributes?.find((item) => item.key === CHECKOUT_ATTRIBUTE_KEY);
+    return attribute?.value?.trim() ?? "";
+  }, [attributes]);
+
+  useEffect(() => {
+    if (!existingAttributeValue || inputValue.trim().length > 0) {
+      return;
+    }
+
+    setInputValue(existingAttributeValue);
+    setLiveInput(existingAttributeValue);
+    setSelectedSuggestionId(existingAttributeValue);
+  }, [existingAttributeValue, inputValue]);
 
   useEffect(() => {
     if (debouncedInput.trim().length < 3) {
@@ -79,15 +100,48 @@ function What3WordsInput() {
     return `Suggestions are filtered to ${countryCode}.`;
   }, [countryCode]);
 
+  const persistCheckoutAttribute = async (words: string | null) => {
+    setIsSavingAttribute(true);
+    setAttributeError(undefined);
+
+    const result = words
+      ? await applyAttributeChange({
+          type: "updateAttribute",
+          key: CHECKOUT_ATTRIBUTE_KEY,
+          value: words
+        })
+      : await applyAttributeChange({
+          type: "removeAttribute",
+          key: CHECKOUT_ATTRIBUTE_KEY
+        });
+
+    if (result.type === "error") {
+      setAttributeError(result.message || "Could not update checkout attribute.");
+    }
+
+    setIsSavingAttribute(false);
+  };
+
   const handleInput = (value: string) => {
     setLiveInput(value);
     setFetchError(undefined);
   };
 
   const handleChange = (value: string) => {
+    const previousSelectedValue = selectedSuggestionId;
     setInputValue(value);
     setLiveInput(value);
     setSelectedSuggestionId("");
+    setAttributeError(undefined);
+
+    if (value.trim().length === 0) {
+      void persistCheckoutAttribute(null);
+      return;
+    }
+
+    if (previousSelectedValue && previousSelectedValue !== value) {
+      void persistCheckoutAttribute(null);
+    }
   };
 
   const handleSuggestionSelect = (value: string | string[]) => {
@@ -98,6 +152,7 @@ function What3WordsInput() {
     setSelectedSuggestionId(selected);
     setInputValue(selected);
     setLiveInput(selected);
+    void persistCheckoutAttribute(selected);
   };
 
   return (
@@ -117,6 +172,9 @@ function What3WordsInput() {
       <Text size="small" appearance="subdued">
         {countryHint}
       </Text>
+      <Text size="small" appearance="subdued">
+        Saved to checkout attribute: {CHECKOUT_ATTRIBUTE_KEY}
+      </Text>
 
       {isLoading ? (
         <Text size="small" appearance="subdued">
@@ -127,6 +185,18 @@ function What3WordsInput() {
       {fetchError ? (
         <Text size="small" appearance="critical">
           {fetchError}
+        </Text>
+      ) : null}
+
+      {isSavingAttribute ? (
+        <Text size="small" appearance="subdued">
+          Saving selected address...
+        </Text>
+      ) : null}
+
+      {attributeError ? (
+        <Text size="small" appearance="critical">
+          {attributeError}
         </Text>
       ) : null}
 
