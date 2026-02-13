@@ -25,3 +25,10 @@ model Session {
   emailVerified Boolean? @default(false)
 }
 
+model ShopSettings {
+  id              String   @id @default(cuid())
+  shop            String   @unique
+  encryptedApiKey String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
