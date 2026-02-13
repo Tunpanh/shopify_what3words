@@ -1,6 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "include": ["app/**/*.ts", "app/**/*.tsx", "remix.env.d.ts"],
-  "exclude": ["node_modules", "build", "dist"]
+  "exclude": ["node_modules", "build", "dist", "app/**/*.test.ts", "app/**/*.test.tsx"]
 }
-

@@ -14,7 +14,12 @@
     "start": "remix-serve ./build/index.js",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "typecheck": "tsc --pretty --noEmit",
-    "typecheck:extension": "tsc --pretty --noEmit -p extensions/w3w-checkout-ui/tsconfig.json"
+    "typecheck:extension": "tsc --pretty --noEmit -p extensions/w3w-checkout-ui/tsconfig.json",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
@@ -31,7 +36,9 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@remix-run/dev": "^2.16.0",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.13.4",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
@@ -39,7 +46,9 @@
     "@typescript-eslint/parser": "^8.24.1",
     "eslint": "^9.20.1",
     "eslint-plugin-react-hooks": "^5.1.0",
+    "jsdom": "^27.0.1",
     "prisma": "^6.4.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
   }
 }

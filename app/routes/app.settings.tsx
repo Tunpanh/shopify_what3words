@@ -18,6 +18,7 @@ import { useMemo, useState } from "react";
 import prisma from "~/db.server";
 import { authenticate } from "~/shopify.server";
 import { encrypt } from "~/utils/encryption.server";
+import { validateWhat3WordsApiKey } from "~/utils/settings-validation.server";
 
 type ActionData = {
   ok: boolean;
@@ -55,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const apiKey = String(formData.get("apiKey") ?? "").trim();
 
-  const apiKeyError = apiKey.length === 0 ? "what3words API key is required." : undefined;
+  const apiKeyError = validateWhat3WordsApiKey(apiKey);
 
   if (apiKeyError) {
     return json<ActionData>(

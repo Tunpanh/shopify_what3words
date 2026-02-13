@@ -11,6 +11,7 @@ import {
   useShippingAddress
 } from "@shopify/ui-extensions-react/checkout";
 import { fetchMockSuggestions } from "./mockSuggestions";
+import { resolveSuggestionSelection } from "./suggestionSelection";
 import type { W3WSuggestion } from "./types";
 import { useDebouncedValue } from "./useDebouncedValue";
 
@@ -145,7 +146,7 @@ function What3WordsInput() {
   };
 
   const handleSuggestionSelect = (value: string | string[]) => {
-    const selected = Array.isArray(value) ? value[0] : value;
+    const selected = resolveSuggestionSelection(value);
     if (!selected) {
       return;
     }
