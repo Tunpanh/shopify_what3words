@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["@shopify/ui-extensions/checkout"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "w3w-checkout-ui",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "typecheck": "tsc --pretty --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@shopify/ui-extensions": "2025.10.x",
+    "@shopify/ui-extensions-react": "2025.10.x",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

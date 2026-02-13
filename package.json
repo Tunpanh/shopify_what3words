@@ -12,7 +12,8 @@
     "dev:shopify": "shopify app dev",
     "start": "remix-serve ./build/index.js",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
-    "typecheck": "tsc --pretty --noEmit"
+    "typecheck": "tsc --pretty --noEmit",
+    "typecheck:extension": "tsc --pretty --noEmit -p extensions/w3w-checkout-ui/tsconfig.json"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
@@ -40,4 +41,3 @@
     "typescript": "^5.7.3"
   }
 }
-
